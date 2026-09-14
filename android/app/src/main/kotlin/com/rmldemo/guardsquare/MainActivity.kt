@@ -1,4 +1,4 @@
-package com.example.rml_fakebank_app
+package com.rmldemo.guardsquare
 
 import io.flutter.embedding.android.FlutterActivity
 

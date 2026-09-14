@@ -81,4 +81,48 @@ void main() {
     expect(find.text('Full name'), findsOneWidget);
     expect(find.widgetWithText(PrimaryButton, 'Create Account'), findsOneWidget);
   });
+
+  testWidgets('register fields keep their own text after mode toggle',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AuthPage(bloc: AuthBloc(repository: _StubAuthRepository())),
+      ),
+    );
+
+    final emailEditable = find.descendant(
+      of: find.byKey(const ValueKey('emailField')),
+      matching: find.byType(EditableText),
+    );
+    final passwordEditable = find.descendant(
+      of: find.byKey(const ValueKey('passwordField')),
+      matching: find.byType(EditableText),
+    );
+
+    await tester.enterText(emailEditable, 'eric@rml.co.id');
+    await tester.enterText(passwordEditable, 'Raditya123');
+
+    await tester.tap(find.text('Create Account'));
+    await tester.pumpAndSettle();
+
+    String textOf(Key key) {
+      return tester
+          .widget<TextField>(
+            find.descendant(
+              of: find.byKey(key),
+              matching: find.byType(TextField),
+            ),
+          )
+          .controller!.text;
+    }
+
+    final emailText = textOf(const ValueKey('emailField'));
+    final passwordText = textOf(const ValueKey('passwordField'));
+    final fullNameText = textOf(const ValueKey('fullNameField'));
+
+    expect(emailText, 'eric@rml.co.id');
+    expect(passwordText, 'Raditya123');
+    expect(fullNameText, isEmpty);
+    expect(passwordText, isNot(emailText));
+  });
 }

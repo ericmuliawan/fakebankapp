@@ -135,6 +135,7 @@ class _AuthPageState extends State<AuthPage> {
                           const SizedBox(height: AppSpacing.spacing24),
                           if (_mode == _AuthMode.register) ...[
                             OutlinedTextField(
+                              key: const ValueKey('fullNameField'),
                               controller: _fullNameController,
                               hintText: 'Full name',
                               prefixIcon: Icons.person_outline,
@@ -144,6 +145,7 @@ class _AuthPageState extends State<AuthPage> {
                             const SizedBox(height: AppSpacing.spacing14),
                           ],
                           OutlinedTextField(
+                            key: const ValueKey('emailField'),
                             controller: _emailController,
                             hintText: 'Email address',
                             prefixIcon: Icons.mail_outline,
@@ -153,6 +155,7 @@ class _AuthPageState extends State<AuthPage> {
                           ),
                           const SizedBox(height: AppSpacing.spacing14),
                           OutlinedTextField(
+                            key: const ValueKey('passwordField'),
                             controller: _passwordController,
                             hintText: 'Password',
                             prefixIcon: Icons.lock_outline,

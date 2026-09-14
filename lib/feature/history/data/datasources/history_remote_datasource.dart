@@ -27,13 +27,14 @@ class HistoryRemoteDataSource implements IHistoryRemoteDataSource {
       final statusCode = response.statusCode;
 
       if (statusCode != null && statusCode >= 200 && statusCode < 300) {
-        if (payload is List) {
-          final items = payload
+        final items = payload is Map ? payload['data'] : null;
+        if (items is List) {
+          final parsed = items
               .map(
                 (e) => TransactionResponse.fromJson(e as Map<String, dynamic>),
               )
               .toList();
-          return ApiResult.success(items);
+          return ApiResult.success(parsed);
         }
       }
 

@@ -115,6 +115,11 @@ class _OutlinedTextFieldState extends State<OutlinedTextField> {
       _isPassword = widget.isPassword;
       _obscureText = widget.isPassword;
     }
+    if (!identical(oldWidget.controller, widget.controller)) {
+      _controller = widget.controller ?? TextEditingController();
+      _ownsController = widget.controller == null;
+      _isFocussedOrFilled = _focusNode.hasFocus || _controller.text.isNotEmpty;
+    }
   }
 
   void _togglePassword() {
@@ -340,6 +345,11 @@ class _OutlinedTextField2State extends State<OutlinedTextField2> {
     if (oldWidget.isPassword != widget.isPassword) {
       _isPassword = widget.isPassword;
       _obscureText = widget.isPassword;
+    }
+    if (!identical(oldWidget.controller, widget.controller)) {
+      _controller = widget.controller ?? TextEditingController();
+      _ownsController = widget.controller == null;
+      _isFocussedOrFilled = _focusNode.hasFocus || _controller.text.isNotEmpty;
     }
   }
 
