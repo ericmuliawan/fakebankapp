@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,17 +16,16 @@ import '../../../../feature/history/presentation/pages/history_page.dart';
 import '../../../../feature/transfer/domain/repositories/transfer_repository.dart';
 import '../../../../feature/transfer/presentation/bloc/transfer_bloc.dart';
 import '../../../../feature/transfer/presentation/pages/transfer_page.dart';
+import '../../../../feature/topup/domain/repositories/topup_repository.dart';
+import '../../../../feature/topup/presentation/bloc/topup_bloc.dart';
+import '../../../../feature/topup/presentation/pages/topup_page.dart';
 import '../../../../uikit/token/index.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({
-    super.key,
-    required this.bloc,
-    required this.authBloc,
-  });
+  const DashboardPage({super.key, required this.bloc, required this.authBloc});
 
   final DashboardBloc bloc;
   final AuthBloc authBloc;
@@ -62,6 +63,14 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
         );
+      case 'Top Up':
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => TopUpPage(
+              bloc: TopUpBloc(repository: getIt<ITopUpRepository>()),
+            ),
+          ),
+        );
       case 'History':
         await _openHistory();
       default:
@@ -82,6 +91,21 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Future<void> _onRefresh() async {
+    final completer = Completer<void>();
+    final subscription = widget.bloc.stream.listen((state) {
+      if (state is DashboardLoaded || state is DashboardError) {
+        if (!completer.isCompleted) completer.complete();
+      }
+    });
+    widget.bloc.add(const DashboardOpened());
+    await completer.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () {},
+    );
+    await subscription.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DashboardBloc, DashboardState>(
@@ -91,15 +115,13 @@ class _DashboardPageState extends State<DashboardPage> {
           backgroundColor: AppColor.primaryDark,
           body: SafeArea(
             child: switch (state) {
-              DashboardInitial() ||
-              DashboardLoading() =>
-                const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
+              DashboardInitial() || DashboardLoading() => const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
               DashboardError(:final message) => _DashboardErrorView(
-                  message: message,
-                  onRetry: () => widget.bloc.add(const DashboardOpened()),
-                ),
+                message: message,
+                onRetry: () => widget.bloc.add(const DashboardOpened()),
+              ),
               DashboardLoaded(:final profile, :final recentTransactions) =>
                 _DashboardContent(
                   profile: profile,
@@ -107,6 +129,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   onLogout: () => widget.authBloc.add(const LogoutRequested()),
                   onQuickAction: _onQuickAction,
                   onOpenHistory: _openHistory,
+                  onRefresh: _onRefresh,
                 ),
             },
           ),
@@ -123,6 +146,7 @@ class _DashboardContent extends StatelessWidget {
     required this.onLogout,
     required this.onQuickAction,
     required this.onOpenHistory,
+    required this.onRefresh,
   });
 
   final Profile profile;
@@ -130,6 +154,7 @@ class _DashboardContent extends StatelessWidget {
   final VoidCallback onLogout;
   final ValueChanged<String> onQuickAction;
   final VoidCallback onOpenHistory;
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -138,70 +163,76 @@ class _DashboardContent extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColor.primaryDark, AppColor.primary, AppColor.primaryLight],
+          colors: [
+            AppColor.primaryDark,
+            AppColor.primary,
+            AppColor.primaryLight,
+          ],
           stops: [0.0, 0.55, 1.0],
         ),
       ),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: _Header(
-              profile: profile,
-              onLogout: onLogout,
+      child: RefreshIndicator(
+        color: AppColor.primary,
+        onRefresh: onRefresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: _Header(profile: profile, onLogout: onLogout),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.spacing20,
-                AppSpacing.spacing24,
-                AppSpacing.spacing20,
-                0,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.spacing20,
+                  AppSpacing.spacing24,
+                  AppSpacing.spacing20,
+                  0,
+                ),
+                child: _BalanceCard(profile: profile),
               ),
-              child: _BalanceCard(profile: profile),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.spacing20),
-              child: _QuickActions(onTap: onQuickAction),
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.spacing20,
-                0,
-                AppSpacing.spacing20,
-                AppSpacing.spacing12,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.spacing20),
+                child: _QuickActions(onTap: onQuickAction),
               ),
-              child: Text(
-                'Recent Activity',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Nunito',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  height: 1.3,
+            ),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.spacing20,
+                  0,
+                  AppSpacing.spacing20,
+                  AppSpacing.spacing12,
+                ),
+                child: Text(
+                  'Recent Activity',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                    height: 1.3,
+                  ),
                 ),
               ),
             ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.spacing20,
-              0,
-              AppSpacing.spacing20,
-              AppSpacing.spacing32,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: _RecentActivity(
-                transactions: recentTransactions,
-                onViewAll: onOpenHistory,
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.spacing20,
+                0,
+                AppSpacing.spacing20,
+                AppSpacing.spacing32,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: _RecentActivity(
+                  transactions: recentTransactions,
+                  onViewAll: onOpenHistory,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -261,10 +292,7 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          _HeaderAction(
-            icon: Icons.notifications_none,
-            onTap: () {},
-          ),
+          _HeaderAction(icon: Icons.notifications_none, onTap: () {}),
           const SizedBox(width: AppSpacing.spacing10),
           _HeaderAction(icon: Icons.logout, onTap: onLogout),
         ],
@@ -492,10 +520,7 @@ class _QuickAction extends StatelessWidget {
 }
 
 class _RecentActivity extends StatelessWidget {
-  const _RecentActivity({
-    required this.transactions,
-    required this.onViewAll,
-  });
+  const _RecentActivity({required this.transactions, required this.onViewAll});
 
   final List<Transaction> transactions;
   final VoidCallback onViewAll;
@@ -526,10 +551,7 @@ class _RecentActivity extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.spacing16),
-            Text(
-              'No transactions yet',
-              style: AppTextStyle.labelLarge,
-            ),
+            Text('No transactions yet', style: AppTextStyle.labelLarge),
             const SizedBox(height: AppSpacing.spacing4),
             Text(
               'Your money moves will appear here',
@@ -564,7 +586,9 @@ class _RecentActivity extends StatelessWidget {
             onTap: onViewAll,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.spacing14),
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.spacing14,
+              ),
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(AppRadius.radius20),
@@ -584,11 +608,7 @@ class _RecentActivity extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: AppSpacing.spacing6),
-                  Icon(
-                    Icons.chevron_right,
-                    color: AppColor.primary,
-                    size: 18,
-                  ),
+                  Icon(Icons.chevron_right, color: AppColor.primary, size: 18),
                 ],
               ),
             ),
@@ -606,8 +626,18 @@ class _RecentActivityItem extends StatelessWidget {
 
   String get _formattedDate {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final local = transaction.transactionDate.toLocal();
     final hh = local.hour.toString().padLeft(2, '0');
@@ -689,11 +719,7 @@ class _DashboardErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.cloud_off_outlined,
-              color: Colors.white,
-              size: 48,
-            ),
+            const Icon(Icons.cloud_off_outlined, color: Colors.white, size: 48),
             const SizedBox(height: AppSpacing.spacing16),
             Text(
               message,

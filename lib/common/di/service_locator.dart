@@ -18,6 +18,9 @@ import 'package:rml_fakebank_app/feature/history/domain/repositories/history_rep
 import 'package:rml_fakebank_app/feature/transfer/data/datasources/transfer_remote_datasource.dart';
 import 'package:rml_fakebank_app/feature/transfer/data/repositories/transfer_repository_impl.dart';
 import 'package:rml_fakebank_app/feature/transfer/domain/repositories/transfer_repository.dart';
+import 'package:rml_fakebank_app/feature/topup/data/datasources/topup_remote_datasource.dart';
+import 'package:rml_fakebank_app/feature/topup/data/repositories/topup_repository_impl.dart';
+import 'package:rml_fakebank_app/feature/topup/domain/repositories/topup_repository.dart';
 
 final getIt = GetIt.instance;
 
@@ -90,6 +93,16 @@ Future<void> initDependencies() async {
   getIt.registerLazySingleton<IHistoryRepository>(
     () => HistoryRepository(
       remoteDataSource: getIt<IHistoryRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ITopUpRemoteDataSource>(
+    () => TopUpRemoteDataSource(dio: getIt<BaseProvider>().dio),
+  );
+
+  getIt.registerLazySingleton<ITopUpRepository>(
+    () => TopUpRepository(
+      remoteDataSource: getIt<ITopUpRemoteDataSource>(),
     ),
   );
 }

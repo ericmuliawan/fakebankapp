@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:main_button/main_button.dart';
 
-import '../../../../uikit/button/primary_button.dart';
 import '../../../../uikit/token/index.dart';
 import '../../../../uikit/widget/textfield/index.dart';
 import '../bloc/auth_bloc.dart';
@@ -190,12 +190,18 @@ class _AuthPageState extends State<AuthPage> {
                               final isLoading =
                                   state is AuthLoading ||
                                   state is AuthRestoring;
-                              return PrimaryButton(
-                                buttonText: _mode == _AuthMode.login
+                              return MainButton(
+                                label: _mode == _AuthMode.login
                                     ? 'Sign In'
                                     : 'Create Account',
-                                isEnabled: !isLoading && _canSubmit(),
-                                onPressed: isLoading ? () {} : _onSubmit,
+                                onPressed: _onSubmit,
+                                isLoading: isLoading,
+                                isDisable: !isLoading && !_canSubmit(),
+                                backgroundColor: AppColor.primary,
+                                disableColor: AppColor.border,
+                                height: 50,
+                                radius: AppRadius.radius10,
+                                fontSize: 16,
                               );
                             },
                           ),

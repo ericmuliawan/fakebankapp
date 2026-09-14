@@ -35,6 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  main_button: ^0.0.19
+
   # State management (Bloc = ViewModel in MVVM)
   flutter_bloc: ^9.1.0
   equatable: ^2.0.7
