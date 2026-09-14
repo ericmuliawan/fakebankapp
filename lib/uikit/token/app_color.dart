@@ -1,0 +1,58 @@
+import 'dart:ui';
+
+import 'package:hexcolor/hexcolor.dart';
+
+class AppColor {
+  static const mainBackground = Color.fromARGB(255, 0, 0, 0);
+  static const primary = Color(0xFF0A2540);
+  static const primaryDark = Color(0xFF06182E);
+  static const primaryLight = Color(0xFF123B6D);
+  static const accent = Color(0xFF4FA1E8);
+  static const secondary = Color(0xFF55DDFF);
+  static const tertiary = Color(0xFF1A72F6);
+  static const trustPilotGreen = Color(0xFF05B67A);
+  static const dusty = Color(0xFFC5DFE5);
+  static const neutral = Color(0xFF444444);
+  static const neutralAlt = Color(0xFFD3D3D3);
+  static const error = Color.fromARGB(255, 241, 1, 1);
+  static const buttonInactive = Color(0xFFE5E5E5);
+  static const labelGray = Color(0xFFB1B1B1);
+  static const errorSnackbarBackground = Color(0xFFFDEDEE);
+  static const divider = Color(0xFFF3F9FA);
+  static const textSecondary = Color(0xFF5E5E5E);
+  static const textFieldBackgroundFilled = Color(0xFFEEFCFF);
+  static const ratingEnable = Color(0xFFFFB800);
+  static const ratingDisable = Color(0xFFD3D3D3);
+  static const shadowFull = Color(0xFF18274B);
+  static const facebook = Color(0xFF1877F2);
+  static Color blackagb = HexColor('#000000');
+  static Color purpleagbbackground = HexColor('#C42BDD');
+  static Color purpleagb = HexColor('#b100cd');
+  static Color greenagb = HexColor('#005518');
+  static Color blueagb = HexColor('#084B84');
+  static const Color primarySoft = Color(0xFFEAEAF2);
+  static Color greensecondary = HexColor('#6AB536');
+  static Color blueagbSecond = HexColor('#45BEDC');
+  static Color blueagbThird = HexColor('#C5F5FF');
+  static Color blueagbFour = HexColor('#E9F2F9');
+  static const Color border = Color(0xFFD3D3E4);
+  static Color priceagb = HexColor('#D9480A');
+  static Color divideragb = HexColor('#F2F6F9');
+  static Color chatagb = HexColor('#009DF5');
+  static Color white = HexColor('#ffffff');
+  static Color greenbullet = HexColor('#6AB536');
+  static Color greenSnackBar = HexColor('#00A30B');
+  static Color greenNotif = HexColor('#D0F0C0');
+  static Color bluebullet = HexColor('#45BEDC');
+  static Color redbullet = HexColor('#FF0000');
+  static Color redNotif = HexColor('#ffb3b3');
+  static Color redSnackbar = HexColor('#1E0A27');
+  static Color redBarInfo = HexColor('#BF0E45');
+  static Color navyBarInfo = HexColor('#1E0A27');
+  static Color greybullet = HexColor('#D3D3D3');
+  static Color unguagb = HexColor('#4200FF');
+  static Color orangeagb = HexColor('#ffaf7a');
+  static Color purplesoftAgb = HexColor('#FBF4FF');
+  static Color purpleAgb2 = HexColor('#F7E9FF');
+  static Color greenAgbWA = HexColor('#34C759');
+}
